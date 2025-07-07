@@ -1,0 +1,150 @@
+.usermanagement-container {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 20px;
+  font-family: 'Segoe UI', sans-serif;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.usermanagement-container h2 {
+  font-size: 24px;
+  margin-bottom: 10px;
+  color: #2c3e50;
+}
+
+.user-form h3 {
+  font-size: 18px;
+  margin: 0 0 10px 0;
+  color: #444;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+.user-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 30px;
+  background: #f9f9f9;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.user-form h3 {
+  grid-column: span 2;
+  margin-bottom: 10px;
+}
+
+.user-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 20px; /* row gap smaller to reduce vertical spacing */
+  margin-bottom: 30px;
+  background: #f9f9f9;
+  padding: 20px;
+  border-radius: 10px;
+  align-items: start;
+}
+
+/* Tighter label + input spacing */
+.user-form label {
+  margin-bottom: 4px; /* smaller margin */
+  font-weight: 500;
+  display: block;
+}
+
+.user-form input,
+.user-form select {
+  margin-top: 2px; /* minimal spacing between label and field */
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+
+.user-form input:focus,
+.user-form select:focus {
+  border-color: #3498db;
+  outline: none;
+}
+
+.form-buttons {
+  grid-column: span 2;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.form-buttons button {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  background-color: #3498db;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.form-buttons button[type="button"] {
+  background-color: #bdc3c7;
+}
+
+.form-buttons button:hover {
+  background-color: #2980b9;
+}
+.user-form-wrapper {
+  padding: 0px;
+  background: #f0f2f5; /* light blue/grey tone */
+  min-height: 100vh;    /* ensure full screen height */
+}
+
+.user-table-container {
+  margin-top: 20px;
+}
+
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.user-table th,
+.user-table td {
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.user-table th {
+  background-color: #f1f1f1;
+  font-weight: bold;
+}
+
+.user-table tr:hover {
+  background-color: #f9f9f9;
+}
+
+.user-table button {
+  padding: 6px 10px;
+  font-size: 13px;
+  background-color: #f39c12;
+  border: none;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.user-table button:hover {
+  background-color: #e67e22;
+}

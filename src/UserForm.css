@@ -1,0 +1,86 @@
+
+  .ribbon {
+    background: linear-gradient(to right, #00b4db, #0083b0);
+    color: white;
+    height: 50px;               /* same height */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    padding: 0 24px;
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+  }
+  
+  
+  .ribbon-buttons {
+    position: absolute;
+    left: 24px;
+    display: flex;
+    gap: 12px;
+  }
+  
+  .ribbon-buttons button {
+    background-color: white;
+    color: #0083b0;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s ease;
+  }
+  
+  .ribbon-buttons button:hover {
+    background-color: #e0f7ff;
+  }
+  
+  .ribbon h2 {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+  }
+  
+  
+ /* Apply background color to entire form wrapper */
+.user-form-wrapper {
+    padding: 0px;
+    background: #f0f2f5; /* light blue/grey tone */
+    min-height: 100vh;    /* ensure full screen height */
+  }
+  
+  /* Optional: also give form card a subtle contrast */
+  .userform-form {
+    background: #fefaf6;
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  }
+  
+  
+  .userform-group {
+    margin-bottom: 20px;
+  }
+  
+  .userform-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .userform-group input,
+  .userform-group select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    outline: none;
+    font-size: 14px;
+  }
+  

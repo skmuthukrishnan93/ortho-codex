@@ -1,24 +1,40 @@
-import logo from './logo.svg';
-import './App.css';
-
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import LoginPage from './LoginPage';
+import RibbonForm from './RibbonForm';
+import UserForm from './UserForm';
+import MainLayout from './MainLayout';
+import Dashboard from './Dashboard';
+import RepClerk from './RepClerk';
+import ReviewDN from './ReviewDN';
+import PrintDN from './PrintDN';
+import UserManagement from './UserManagement';
 function App() {
+  const isAuthenticated = true;//!!localStorage.getItem('token'); // You can customize token logic
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Routes>
+  {/* Public Routes */}
+  <Route path="/login" element={<LoginPage />} />
+
+  {/* Protected Routes */}
+  {isAuthenticated ? (
+    <Route path="/" element={<MainLayout />}>
+      <Route path="form" element={<RibbonForm />} />
+      <Route path="dashboard" element={<Dashboard />} />
+      <Route path="create-user" element={<UserForm />} />
+      <Route path="RepClerk" element={<RepClerk />} />
+      <Route path="ReviewDN" element={<ReviewDN />} />
+      <Route path="PrintDN" element={<PrintDN />} />
+      <Route path="Users" element={<UserManagement />} />
+      <Route path="*" element={<Navigate to="/login" />} />
+    </Route>
+  ) : (
+    <Route path="*" element={<Navigate to="/" />} />
+  )}
+</Routes>
+    </Router>
   );
 }
 
