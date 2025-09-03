@@ -5,13 +5,17 @@ import { FaSave, FaFileExport,FaUpload, FaCheckSquare, FaMailBulk } from 'react-
 import { useNavigate } from 'react-router-dom';
 import API_BASE_URL from "./config";
 import Popup from './Popup';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { useLoader } from './LoaderContext';
 
 function RepClerk() {
   const [adminMenuOpen, setAdminMenuOpen] = useState(false);
   const [deliveryNote, setDeliveryNote] = useState('');
   const [tableData, setTableData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const { loading, setLoading } = useLoader(); // ✅ Correct - destructure object
+
   const [columnFilters, setColumnFilters] = useState({});
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [showPopup, setShowPopup] = useState(false);
@@ -31,6 +35,7 @@ function RepClerk() {
   }, []);
   const handleSave = async () => {
     setSaving(true);
+    setLoading(true);
     try {
       const response = await axios.post(`${API_BASE_URL}/Rep/clerksave`, {
         data: tableData}, // body
@@ -52,10 +57,12 @@ function RepClerk() {
       alert('An error occurred while saving.');
     } finally {
       setSaving(false);
+      setLoading(false);
     }
   };
   const handleValidateSave = async () => {
     setSaving(true);
+    setLoading(true);
     try {
       const response = await axios.post(`${API_BASE_URL}/Rep/clerkvalidate`, {
         data: tableData}, // body
@@ -77,6 +84,7 @@ function RepClerk() {
       alert('An error occurred while saving.');
     } finally {
       setSaving(false);
+      setLoading(false);
     }
   };
 
@@ -84,6 +92,7 @@ function RepClerk() {
     const confirmPost = window.confirm("Are you sure you wish to post to syspro?");
   if (!confirmPost) return;
     setSaving(true);
+    setLoading(true);
     try {
       const response = await axios.post(`${API_BASE_URL}/Rep/posttosyspro`, {
         data: tableData}, // body
@@ -105,10 +114,12 @@ function RepClerk() {
       alert('An error occurred while saving.');
     } finally {
       setSaving(false);
+      setLoading(false);
     }
   };
   const handleFetch = async (note = deliveryNote) => {
     setLoading(true);
+    
     try {
       const response = await axios.post(`${API_BASE_URL}/Rep/clerkorderdetails`, {
         SalesOrderNumber: note}, // body
@@ -135,7 +146,7 @@ function RepClerk() {
   const sendMail = async () => {
     setLoading(true);
     try {
-      const response = await axios.post(`${API_BASE_URL}/User/sendMail`, {
+      const response = await axios.post(`${API_BASE_URL}/email/sendMail`, {
         SalesOrderNumber: deliveryNote}, // body
         {
           headers: {
@@ -216,6 +227,9 @@ else
   const isValidateAllowed1 = filteredData.some(
     (item) => item.status === 'ReadyToPostSyspro'
   );
+  const isEnableEmail = filteredData.some(
+    (item) => item.status === 'Send Email To Customer Service'
+  );
   const disabledPost = filteredData.some(
     (item) => item.variance != 0
   );
@@ -237,12 +251,12 @@ else
   <FaCheckSquare className="icon" /> Validate(Ready to Post Syspro)
 </button>
           )}
-          {!disabledPost && isValidateAllowed1 && (
-<button className="ribbon-button" onClick={handleSysproSave} disabled={disabledPost}>
+          {isValidateAllowed1 && (
+<button className="ribbon-button" onClick={handleSysproSave}>
   <FaUpload className="icon" /> Post To Syspro
 </button>
 )}
-  {disabledPost && isValidateAllowed1 && (
+  {isEnableEmail && (
 <button className="ribbon-button" onClick={sendMail}>
   <FaMailBulk className="icon" /> Send Email To Customer Service
 </button>
@@ -342,6 +356,31 @@ else
   readOnly={item.mbomFlag === 'P' || disableOtherButtons}
   onChange={(e) => {
     const value = e.target.value;
+    const maxQty = parseFloat(item.mshipQty) || 0;
+
+    if (value > maxQty) {
+      toast.error('Returned Qty cannot exceed Delivered Qty', {
+        position: 'top-center',
+        autoClose: 3000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: false,
+      });
+      return;
+    }
+    if(value<0)
+    {
+      toast.error('Qty cannot be negative', {
+        position: 'top-center',
+        autoClose: 3000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: false,
+      });
+      return;
+    }
     setFilteredData(prev =>
       prev.map((row, i) =>
         i === index ? { ...row, retQty: value } : row
@@ -369,6 +408,7 @@ else
           </tbody>
         </table>
       </div>
+      <ToastContainer theme="colored" position="center" />
     </div>
   );
 }

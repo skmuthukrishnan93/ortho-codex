@@ -51,6 +51,68 @@
     background: #f0f2f5; /* light blue/grey tone */
     min-height: 100vh;    /* ensure full screen height */
   }
+  .multiselect-wrapper {
+    position: relative;
+  }
+  
+  .dropdown-box {
+    padding: 10px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+  }
+  
+  .multiselect-dropdown {
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1;
+    width: 100%;
+  }
+  
+  .checkbox-option {
+    display: flex;
+    align-items: center;     /* Align checkbox and text vertically */
+    gap: 8px;                /* Space between checkbox and text */
+    padding: 8px 0;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  
+  .checkbox-option input[type="checkbox"] {
+    margin: 0;
+    transform: translateY(1px); /* Adjust slightly if checkbox still looks off */
+  }
+  .checkbox-option:hover {
+    background-color: #f7f7f7;
+  }
+  
+  .checkbox-option {
+    display: flex;
+    align-items: center;           /* Align checkbox and text vertically */
+    gap: 10px;                     /* Space between checkbox and text */
+    padding: 8px 12px;
+    border-bottom: 1px solid #ccc;
+    font-size: 14px;
+    line-height: 1.2;
+    background-color: #fff;
+    cursor: pointer;
+  }
+  
+  .checkbox-option:last-child {
+    border-bottom: none;
+  }
+  
+  .checkbox-option input[type="checkbox"] {
+    margin: 0;
+    width: 16px;
+    height: 16px;
+    vertical-align: middle;
+  }
+  
+  
   
   /* Optional: also give form card a subtle contrast */
   .userform-form {
@@ -68,7 +130,6 @@
   }
   
   .userform-group label {
-    display: block;
     margin-bottom: 8px;
     font-weight: 500;
     color: #333;

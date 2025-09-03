@@ -5,12 +5,14 @@ import { FaSave, FaFileExport, FaUndo } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import API_BASE_URL from "./config";
 import Popup from './Popup';
+import { useLoader } from './LoaderContext';
 function ReviewDN() {
   const [adminMenuOpen, setAdminMenuOpen] = useState(false);
   const [deliveryNote, setDeliveryNote] = useState('');
   const [tableData, setTableData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const { loading, setLoading } = useLoader(); // ✅ Correct - destructure object
+
   const [columnFilters, setColumnFilters] = useState({});
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [showPopup, setShowPopup] = useState(false);
@@ -30,6 +32,7 @@ function ReviewDN() {
   }, []);
   const handleSave = async () => {
     setSaving(true);
+    setLoading(true);
     try {
       const response = await axios.post(`${API_BASE_URL}/Rep/updatestatus`, {
         data: tableData}, // body
@@ -51,6 +54,7 @@ function ReviewDN() {
       alert('An error occurred while saving.');
     } finally {
       setSaving(false);
+      setLoading(false);
     }
   };
   
@@ -126,7 +130,7 @@ function ReviewDN() {
     return sortConfig.direction === 'asc' ? '↑' : '↓';
   };
   const isValidateAllowed = filteredData.some(
-    (item) => item.status === 'ReadyToPostSyspro' || item.status==='Completed&ReadyForValidation'
+    (item) => item.status === 'ReadyToPostSyspro' || 'Send Email To Customer Service' || item.status==='Completed&ReadyForValidation'
   );
 
   return (

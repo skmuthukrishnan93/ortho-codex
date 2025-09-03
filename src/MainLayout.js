@@ -1,13 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import TopNavbar from './TopNavbar';
 import './MainLayout.css';
 
 function MainLayout() {
   const navigate = useNavigate();
-  const [tabs, setTabs] = useState([{ label: 'Dashboard', path: '/dashboard' }]);
+  const [tabs, setTabs] = useState([{ label: 'Home', path: '/dashboard' }]);
   const [activeTab, setActiveTab] = useState('/dashboard');
-
+  useEffect(() => {
+    const token = localStorage.getItem("jwt_token"); // or sessionStorage
+    if (!token) {
+      navigate("/login"); 
+    }
+  }, [navigate]);
   const openTab = (label, path) => {
     if (!tabs.some(tab => tab.path === path)) {
       setTabs([...tabs, { label, path }]);

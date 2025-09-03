@@ -50,8 +50,19 @@ function LoginPage() {
         localStorage.setItem("username", username);
         localStorage.setItem("roles", roles);
         localStorage.setItem("jwt_token", jwt_token);
-  
-        navigate("/dashboard");
+        if(roles === 'rep')
+        {
+          navigate("/form");
+        }
+        else if(roles === 'repclerk')
+        {
+          navigate("/RepClerk");
+        }
+        else
+      {
+        navigate("/ReviewDN");
+      }
+        
       } else {
         const result = await response.json();
         alert(result.message);

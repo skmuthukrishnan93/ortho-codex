@@ -6,12 +6,14 @@ import { useNavigate } from 'react-router-dom';
 import API_BASE_URL from "./config";
 import Popup from './Popup';
 import Report from './Report';
+import { useLoader } from './LoaderContext';
 function PrintDN() {
   const [adminMenuOpen, setAdminMenuOpen] = useState(false);
   const [deliveryNote, setDeliveryNote] = useState('');
   const [tableData, setTableData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const { loading, setLoading } = useLoader(); // ✅ Correct - destructure object
+
   const [columnFilters, setColumnFilters] = useState({});
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [showPopup, setShowPopup] = useState(false);
@@ -92,7 +94,12 @@ function PrintDN() {
       <div className="ribbon-bar">
         <div className="ribbon-buttons">
        
-        <button className="ribbon-button" onClick={handleFetch} disabled={loading}>
+        <button
+  type="button"
+  className="ribbon-button"
+  onClick={() => handleFetch()}
+  disabled={loading}
+>
   <FaPrint className="icon" /> {loading ? 'Printing...' : 'Print'}
 </button>
         </div>

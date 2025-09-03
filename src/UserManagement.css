@@ -1,150 +1,243 @@
-.usermanagement-container {
-  max-width: 1200px;
-  margin: 20px auto;
+.user-form-wrapper {
   padding: 20px;
-  font-family: 'Segoe UI', sans-serif;
-  background: #ffffff;
+}
+
+.add-btn {
+  margin-bottom: 15px;
+  padding: 8px 12px;
+  background: #0066cc;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Table container */
+.user-table-container {
+  margin-top: 20px;
+  background: #f9f9f9;
+  padding: 16px;
   border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.usermanagement-container h2 {
-  font-size: 24px;
-  margin-bottom: 10px;
-  color: #2c3e50;
+/* Table structure */
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 15px;
+  overflow: hidden;
+  border-radius: 12px;
 }
 
-.user-form h3 {
-  font-size: 18px;
-  margin: 0 0 10px 0;
-  color: #444;
+/* Table header */
+.user-table thead {
+  background-color: #0066cc;
+  color: white;
 }
 
-.form-group {
+.user-table thead th {
+  padding: 12px;
+  text-align: left;
+}
+
+/* Table body */
+.user-table tbody tr:nth-child(even) {
+  background-color: #f1f8ff;
+}
+
+.user-table tbody tr:nth-child(odd) {
+  background-color: #eaf4ff;
+}
+
+.user-table td {
+  padding: 10px;
+  vertical-align: middle;
+}
+
+/* Hover effect */
+.user-table tbody tr:hover {
+  background-color: #d6eaff;
+  transition: background-color 0.3s ease;
+}
+.filter-input {
+  width: 100%;
+  padding: 5px;
+  font-size: 13px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Action button */
+.user-table button {
+  background-color: #ffc107;
+  color: #212529;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s ease;
+}
+
+.user-table button:hover {
+  background-color: #e0a800;
+}
+.multiselect-wrapper {
+  position: relative;
+}
+
+.dropdown-box {
+  padding: 10px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}
+
+.multiselect-dropdown {
+  position: absolute;
+  background: white;
+  border: 1px solid #ccc;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1;
+  width: 100%;
+}
+
+.checkbox-option {
   display: flex;
-  flex-direction: column;
+  align-items: center;     /* Align checkbox and text vertically */
+  gap: 8px;                /* Space between checkbox and text */
+  padding: 8px 0;
+  border-bottom: 1px solid #ddd;
+  font-size: 14px;
+  line-height: 1.4;
 }
-.user-form {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 30px;
-  background: #f9f9f9;
+
+.checkbox-option input[type="checkbox"] {
+  margin: 0;
+  transform: translateY(1px); /* Adjust slightly if checkbox still looks off */
+}
+.checkbox-option:hover {
+  background-color: #f7f7f7;
+}
+
+.checkbox-option {
+  display: flex;
+  align-items: center;           /* Align checkbox and text vertically */
+  gap: 10px;                     /* Space between checkbox and text */
+  padding: 8px 12px;
+  border-bottom: 1px solid #ccc;
+  font-size: 14px;
+  line-height: 1.2;
+  background-color: #fff;
+  cursor: pointer;
+}
+
+.checkbox-option:last-child {
+  border-bottom: none;
+}
+
+.checkbox-option input[type="checkbox"] {
+  margin: 0;
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+}
+/* Role badge styling */
+.role-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: bold;
+  text-transform: capitalize;
+  color: white;
+}
+
+.role-admin {
+  background-color: #6c757d;
+}
+
+.role-rep {
+  background-color: #17a2b8;
+}
+
+.role-repclerk {
+  background-color: #28a745;
+}
+
+
+/* Modal styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.4);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal {
+  background: white;
   padding: 20px;
-  border-radius: 10px;
+  border-radius: 12px;
+  width: 500px;
+  max-width: 90%;
+  animation: slideIn 0.3s ease-out;
 }
 
-.user-form h3 {
-  grid-column: span 2;
-  margin-bottom: 10px;
+@keyframes slideIn {
+  from {
+    transform: translateY(-30%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
-.user-form {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px 20px; /* row gap smaller to reduce vertical spacing */
-  margin-bottom: 30px;
-  background: #f9f9f9;
-  padding: 20px;
-  border-radius: 10px;
-  align-items: start;
+.user-form .form-group {
+  margin-bottom: 12px;
 }
 
-/* Tighter label + input spacing */
-.user-form label {
-  margin-bottom: 4px; /* smaller margin */
-  font-weight: 500;
-  display: block;
+.user-form .form-group label {
+  margin-bottom: 4px;
+  font-weight: 600;
 }
 
 .user-form input,
 .user-form select {
-  margin-top: 2px; /* minimal spacing between label and field */
-  padding: 8px 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 14px;
   width: 100%;
-  box-sizing: border-box;
-}
-
-
-.user-form input:focus,
-.user-form select:focus {
-  border-color: #3498db;
-  outline: none;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
 }
 
 .form-buttons {
-  grid-column: span 2;
   display: flex;
-  justify-content: flex-end;
   gap: 10px;
   margin-top: 10px;
 }
 
 .form-buttons button {
-  padding: 10px 18px;
+  padding: 8px 12px;
   border: none;
   border-radius: 6px;
-  background-color: #3498db;
-  color: #fff;
-  font-weight: 600;
   cursor: pointer;
-  transition: background 0.3s ease;
+}
+
+.form-buttons button[type="submit"] {
+  background: #28a745;
+  color: white;
 }
 
 .form-buttons button[type="button"] {
-  background-color: #bdc3c7;
-}
-
-.form-buttons button:hover {
-  background-color: #2980b9;
-}
-.user-form-wrapper {
-  padding: 0px;
-  background: #f0f2f5; /* light blue/grey tone */
-  min-height: 100vh;    /* ensure full screen height */
-}
-
-.user-table-container {
-  margin-top: 20px;
-}
-
-.user-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-  font-size: 14px;
-}
-
-.user-table th,
-.user-table td {
-  padding: 12px 14px;
-  text-align: left;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.user-table th {
-  background-color: #f1f1f1;
-  font-weight: bold;
-}
-
-.user-table tr:hover {
-  background-color: #f9f9f9;
-}
-
-.user-table button {
-  padding: 6px 10px;
-  font-size: 13px;
-  background-color: #f39c12;
-  border: none;
+  background: #dc3545;
   color: white;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.user-table button:hover {
-  background-color: #e67e22;
 }

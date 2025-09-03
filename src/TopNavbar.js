@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   FaHome, FaSignOutAlt, FaCapsules,FaChevronDown,
-  FaClinicMedical, FaUserShield, FaCheckDouble, FaBars, FaPrint, FaUserEdit
+  FaClinicMedical, FaUserShield, FaCheckDouble, FaBars, FaPrint, FaUserEdit, FaMailchimp
 } from 'react-icons/fa';
 import './TopNavbar.css';
 
@@ -30,7 +30,8 @@ const toggleAdminMenu = () => {
   };
   const handleNavigate = (label, path) => {
     onNavigate(label, path);
-    setIsMenuOpen(false); // auto close on mobile
+    setIsMenuOpen(false);        // Close the mobile menu
+    setIsAdminMenuOpen(false);   // Close the admin dropdown menu
   };
 
   return (
@@ -41,9 +42,9 @@ const toggleAdminMenu = () => {
         </button>
       </div>
       <div className={`nav-buttons ${isMenuOpen ? 'open' : ''}`}>
-        <button onClick={() => handleNavigate('Dashboard', '/dashboard')}>
+        {/* <button onClick={() => handleNavigate('Dashboard', '/dashboard')}>
           <FaHome className="icon" /> Dashboard
-        </button>
+        </button> */}
 
         {role === 'rep' && (
           <button onClick={() => handleNavigate('Rep', '/form')}>
@@ -82,6 +83,10 @@ const toggleAdminMenu = () => {
           <hr className="dropdown-divider" />
           <button onClick={() => handleNavigate('User Management', '/Users')}>
             <FaUserEdit className="icon" /> User Management
+          </button>
+          <hr className="dropdown-divider" />
+          <button onClick={() => handleNavigate('Email Setting', '/EmailSettings')}>
+            <FaMailchimp className="icon" /> Email Setting
           </button>
         </div>
       )}

@@ -5,14 +5,17 @@ import { FaSave, FaFileExport } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import API_BASE_URL from "./config";
 import Popup from './Popup';
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { useLoader } from './LoaderContext';
 
 function RibbonForm() {
   const [adminMenuOpen, setAdminMenuOpen] = useState(false);
   const [deliveryNote, setDeliveryNote] = useState('');
   const [tableData, setTableData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const { loading, setLoading } = useLoader(); // ✅ Correct - destructure object
+
   const [columnFilters, setColumnFilters] = useState({});
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [showPopup, setShowPopup] = useState(false);
@@ -22,19 +25,26 @@ function RibbonForm() {
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
   const token = localStorage.getItem('jwt_token');
+  useEffect(() => {
+    
+    if (!token) {
+      navigate("/login"); 
+    }
+  }, [navigate]);
   //useEffect(() => {
     //handleFetch();
   //}, []);
   const handleSave = async () => {
     setSaving(true);
+    setLoading(true);
     try {
       const response = await axios.post(`${API_BASE_URL}/Rep/save`, {
-        data: tableData}, // body
-        {
-          headers: {
-            Authorization: `Bearer ${token}`, // pass token in header
-            'Content-Type': 'application/json'
-          }        
+        data: tableData
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
   
       if (response.status === 200) {
@@ -44,12 +54,26 @@ function RibbonForm() {
         alert('Failed to save data.');
       }
     } catch (error) {
+      if (error.response) {
+        if (error.response.status === 400) {
+          // Handle 400 Bad Request with backend message
+          alert(`Validation Error: ${error.response.data}`);
+        } else {
+          alert(`Error: ${error.response.status} - ${error.response.data}`);
+        }
+      } else if (error.request) {
+        alert('No response from server.');
+      } else {
+        alert('An unexpected error occurred.');
+      }
+  
       console.error('Save error:', error);
-      alert('An error occurred while saving.');
     } finally {
+      setLoading(false);
       setSaving(false);
     }
   };
+  
   
   const handleFetch = async (note = deliveryNote) => {
     setLoading(true);
@@ -224,6 +248,31 @@ function RibbonForm() {
   readOnly={item.mbomFlag === 'P'}
   onChange={(e) => {
     const value = e.target.value;
+    const maxQty = parseFloat(item.mshipQty) || 0;
+
+    if (value > maxQty) {
+      toast.error('Rep Usage Qty cannot exceed Delivered Qty', {
+        position: 'top-center',
+        autoClose: 3000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: false,
+      });
+      return;
+    }
+    if(value<0)
+    {
+      toast.error('Qty cannot be negative', {
+        position: 'top-center',
+        autoClose: 3000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: false,
+      });
+      return;
+    }
     setFilteredData(prev =>
       prev.map((row, i) =>
         i === index ? { ...row, repUsageQty: value } : row
@@ -250,7 +299,10 @@ function RibbonForm() {
           </tbody>
         </table>
       </div>
+      <ToastContainer theme="colored" position="center" />
+
     </div>
+    
   );
 }
 

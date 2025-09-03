@@ -3,26 +3,46 @@ import {  useNavigate } from "react-router-dom";
 import "./UserForm.css";
 import API_BASE_URL from "./config";
 import axios from "axios";
- 
+import { useLoader } from './LoaderContext';
 function UserForm() {
   const navigate = useNavigate();
   const token = localStorage.getItem('jwt_token');
   const [salespersons, setSalespersons] = useState([]);
+  const [defaultclerks, setDefaultClerks] = useState([]);
+  const { loading, setLoading } = useLoader(); // ✅ Correct - destructure object
+
   useEffect(() => {
     const fetchSalespersons = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/Rep/GetSalesPerson`, {
+        const response = await axios.get(`${API_BASE_URL}/Rep/GetSalesArea`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
         });
         setSalespersons(response.data); // Assuming API returns an array
       } catch (error) {
-        console.error("Error fetching salespersons:", error);
+        console.error("Error fetching salesArea:", error);
       }
     };
   
     fetchSalespersons();
+  }, []);
+  
+  useEffect(() => {
+    const fetchDefaultClerks = async () => {
+      try {
+        const response = await axios.get(`${API_BASE_URL}/Rep/GetClerks`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        setDefaultClerks(response.data); // Assuming API returns an array
+      } catch (error) {
+        console.error("Error fetching Clerks:", error);
+      }
+    };
+  
+    fetchDefaultClerks();
   }, []);
   
   const [user, setUser] = useState({
@@ -33,6 +53,8 @@ function UserForm() {
     confirmPassword: "",
     roles: "",
     customeremail:"",
+    defaultRouteClerk:"",
+    area: [],
   });
 
   const handleChange = (e) => {
@@ -46,7 +68,7 @@ function UserForm() {
       alert("Passwords do not match!");
       return;
     }
-
+    setLoading(true);
     try {
       const response = await fetch(`${API_BASE_URL}/user/createuser`, {
         method: "POST", // body
@@ -61,8 +83,9 @@ function UserForm() {
           email: user.email,
           password: user.password,
           roles: user.roles,
-          salesperson: user.salesperson,
+          area: user.area,
           customeremail: user.customeremail,
+          defaultRouteClerk: user.defaultRouteClerk,
         })
       });
 
@@ -81,8 +104,9 @@ function UserForm() {
         password: "",
         confirmPassword: "",
         roles: "",
-        salesperson: "",
+        area: [],
         customeremail:"",
+        defaultRouteClerk:"",
       });
     }
     else
@@ -96,8 +120,54 @@ function UserForm() {
       console.error("Error:", error);
       alert(`❌ Error: ${error.message}`);
     }
+    finally
+    {
+      setLoading(false);
+    }
   };
-
+  function MultiSelectDropdown({ options, selected, onChange }) {
+    const [isOpen, setIsOpen] = useState(false);
+  
+    const toggleOption = (value) => {
+      const newSelected = selected?.includes(value)
+        ? selected.filter((v) => v !== value)
+        : [...selected, value];
+      onChange(newSelected);
+    };
+  
+    return (
+      <div className="userform-group">
+        <label>Syspro Area</label>
+        <div className="multiselect-wrapper">
+          <div className="dropdown-box" onClick={() => setIsOpen((prev) => !prev)}>
+            {selected?.length > 0
+              ? options
+                  .filter((sp) => selected?.includes(sp.area))
+                  .map((sp) => sp.area)
+                  .join(", ")
+              : "Select Area(s)"}
+          </div>
+          {isOpen && (
+            <div className="multiselect-dropdown">
+            {options.map((sp) => (
+              <label key={sp.area} className="checkbox-option">
+                <input
+                  type="checkbox"
+                  value={sp.area}
+                  checked={selected?.includes(sp.area)}
+                  onChange={() => toggleOption(sp.area)}
+                />
+                <span>{sp.description} ({sp.area})</span>
+              </label>
+            ))}
+          </div>
+          
+          )}
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <div className="user-form-wrapper">
       {/* Ribbon */}
@@ -177,28 +247,38 @@ function UserForm() {
           </select>
         </div>
         {user.roles === "rep" && (
-  <div className="userform-group">
-    <label>Syspro Salesperson</label>
-    <select
-      name="salesperson"
-      value={user.salesperson || ""}
-      onChange={handleChange}
-      required
-    >
-      <option value="">Select salesperson</option>
-      {salespersons.map((sp) => (
-        <option key={sp.salesperson} value={sp.salesperson}>
-          {sp.name}
-        </option>
-      ))}
-    </select>
-  </div>
+  <>
+    <MultiSelectDropdown
+      options={salespersons}
+      selected={user.area}
+      onChange={(selectedValues) =>
+        setUser((prev) => ({ ...prev, area: selectedValues }))
+      }
+    />
+    <div className="userform-group">
+      <label>Route to clerk</label>
+      <select
+        name="defaultRouteClerk"
+        value={user.defaultRouteClerk || ""}
+        onChange={handleChange}
+        required
+      >
+        <option value="">Select Receiving Clerk</option>
+        {defaultclerks.map((sp) => (
+          <option key={sp.username} value={sp.username}>
+            {sp.username}
+          </option>
+        ))}
+      </select>
+    </div>
+  </>
 )}
+
 {user.roles === "repclerk" && (
     <div className="userform-group">
           <label>Customer Service Email(Multiple seperate by comma)</label>
           <input
-            type="email"
+            type="text"
             name="customeremail"
             value={user.customeremail}
             onChange={handleChange}
