@@ -15,6 +15,7 @@ function RibbonForm() {
   const [tableData, setTableData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const { loading, setLoading } = useLoader(); // ✅ Correct - destructure object
+  const [isSaveEnabled, setIsSaveEnabled] = useState(false);
 
   const [columnFilters, setColumnFilters] = useState({});
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
@@ -91,8 +92,10 @@ function RibbonForm() {
         alert("No data found!");
         return;
       }
-
-      setTableData(response.data);
+      setTableData(response.data.map(row => ({
+        ...row,
+        visited: false  // add visited flag
+      })));
     } catch (err) {
       console.error(err);
       setTableData([]);
@@ -100,7 +103,18 @@ function RibbonForm() {
       setLoading(false);
     }
   };
-
+  useEffect(() => {
+    if (tableData.length > 0) {
+      // Enable Save if ALL rows have been visited, or if they are read-only (mbomFlag === 'P')
+      const allVisited = tableData.some(
+        row => row.visited
+      );
+      setIsSaveEnabled(allVisited);
+    } else {
+      setIsSaveEnabled(false);
+    }
+  }, [tableData]);
+  
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -151,9 +165,22 @@ function RibbonForm() {
     <div className="ribbon-page" onClick={closeAdminMenu}>
       <div className="ribbon-bar">
         <div className="ribbon-buttons">
-        <button className="ribbon-button" onClick={handleSave} disabled={saving}>
-  <FaSave className="icon" /> {saving ? 'Saving...' : 'Save'}
-</button>
+        {isSaveEnabled && !saving && (
+  <button 
+    className="ribbon-button" 
+    onClick={handleSave}
+  >
+    <FaSave className="icon" /> Save
+  </button>
+)}
+
+{saving && (
+  <button className="ribbon-button" disabled>
+    <FaSave className="icon" /> Saving...
+  </button>
+)}
+
+
           
         </div>
       </div>
@@ -244,12 +271,17 @@ function RibbonForm() {
                   <td style={{ textAlign: 'right' }}>
                   <input
   type="number"
-  value={item.repUsageQty || ''}
+  value={item.repUsageQty??"0"}
   readOnly={item.mbomFlag === 'P'}
   onChange={(e) => {
-    const value = e.target.value;
+    const value = e.target.value.trim();
     const maxQty = parseFloat(item.mshipQty) || 0;
+    
 
+    // If empty, set to "0"
+    if (value === "" || isNaN(value)) {
+      value = "0";
+    }
     if (value > maxQty) {
       toast.error('Rep Usage Qty cannot exceed Delivered Qty', {
         position: 'top-center',
@@ -284,6 +316,13 @@ function RibbonForm() {
       )
     );
   }}
+  onBlur={() => {
+    setTableData(prev =>
+      prev.map((row, i) =>
+        i === index ? { ...row, visited: true } : row
+      )
+    );
+  }}
   style={{
     backgroundColor: item.mbomFlag === 'P' ? '#f0f0f0' : 'white',
     cursor: item.mbomFlag === 'P' ? 'not-allowed' : 'text'
@@ -298,6 +337,19 @@ function RibbonForm() {
             )}
           </tbody>
         </table>
+        <div className="bottom-save">
+  {(isSaveEnabled || saving) && (
+    <button 
+      className={`ribbon-button full-width ${isSaveEnabled && !saving ? 'visible' : ''}`}
+      onClick={handleSave}
+      disabled={saving}
+    >
+      <FaSave className="icon" /> {saving ? 'Saving...' : 'Save'}
+    </button>
+  )}
+</div>
+
+
       </div>
       <ToastContainer theme="colored" position="center" />
 

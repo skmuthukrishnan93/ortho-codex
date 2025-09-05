@@ -15,7 +15,7 @@ function RepClerk() {
   const [tableData, setTableData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const { loading, setLoading } = useLoader(); // ✅ Correct - destructure object
-
+  const [isSaveEnabled, setIsSaveEnabled] = useState(false);
   const [columnFilters, setColumnFilters] = useState({});
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [showPopup, setShowPopup] = useState(false);
@@ -60,6 +60,17 @@ function RepClerk() {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    if (tableData.length > 0) {
+      // Enable Save if ALL rows have been visited, or if they are read-only (mbomFlag === 'P')
+      const allVisited = tableData.some(
+        row => row.visited
+      );
+      setIsSaveEnabled(allVisited);
+    } else {
+      setIsSaveEnabled(false);
+    }
+  }, [tableData]);
   const handleValidateSave = async () => {
     setSaving(true);
     setLoading(true);
@@ -237,14 +248,20 @@ else
     <div className="ribbon-page" onClick={closeAdminMenu}>
       <div className="ribbon-bar">
         <div className="ribbon-buttons">
-        {isSaveAllowed && (
-        <button
-  className="ribbon-button"
-  onClick={handleSave}
-  disabled={!isSaveAllowed || saving}
->
-  <FaSave className="icon" /> {saving ? 'Saving...' : 'Save'}
-</button>)}
+        {isSaveAllowed && isSaveEnabled && !saving && (
+  <button 
+    className="ribbon-button" 
+    onClick={handleSave}
+  >
+    <FaSave className="icon" /> Save
+  </button>
+)}
+
+{saving && (
+  <button className="ribbon-button" disabled>
+    <FaSave className="icon" /> Saving...
+  </button>
+)}
          
           {isValidateAllowed && (
           <button className="ribbon-button" onClick={handleValidateSave} disabled={!isValidateAllowed}>
@@ -352,7 +369,7 @@ else
                   <td style={{ textAlign: 'right' }}>
                   <input
   type="number"
-  value={item.retQty || ''}
+  value={item.retQty??item.mshipQty}
   readOnly={item.mbomFlag === 'P' || disableOtherButtons}
   onChange={(e) => {
     const value = e.target.value;
@@ -392,6 +409,13 @@ else
       )
     );
   }}
+  onBlur={() => {
+    setTableData(prev =>
+      prev.map((row, i) =>
+        i === index ? { ...row, visited: true } : row
+      )
+    );
+  }}
   style={{
     backgroundColor: item.mbomFlag === 'P' || disableOtherButtons ? '#f0f0f0' : 'white',
     cursor: item.mbomFlag === 'P' || disableOtherButtons ? 'not-allowed' : 'text'
@@ -407,6 +431,17 @@ else
             )}
           </tbody>
         </table>
+        <div className="bottom-save">
+  {(isSaveEnabled || saving) && isSaveAllowed && (
+    <button 
+      className={`ribbon-button full-width ${isSaveEnabled && !saving ? 'visible' : ''}`}
+      onClick={handleSave}
+      disabled={saving}
+    >
+      <FaSave className="icon" /> {saving ? 'Saving...' : 'Save'}
+    </button>
+  )}
+</div>
       </div>
       <ToastContainer theme="colored" position="center" />
     </div>
