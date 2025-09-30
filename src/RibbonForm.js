@@ -8,6 +8,7 @@ import Popup from './Popup';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useLoader } from './LoaderContext';
+import { useLocation } from 'react-router-dom';
 
 function RibbonForm() {
   const [adminMenuOpen, setAdminMenuOpen] = useState(false);
@@ -26,6 +27,9 @@ function RibbonForm() {
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
   const token = localStorage.getItem('jwt_token');
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const salesOrder = queryParams.get('salesOrder'); 
   useEffect(() => {
     
     if (!token) {
@@ -35,6 +39,12 @@ function RibbonForm() {
   //useEffect(() => {
     //handleFetch();
   //}, []);
+  useEffect(() => {
+    if (salesOrder) {
+      setDeliveryNote(salesOrder);
+      handleFetch(salesOrder); // fetch data for this sales order
+    }
+  }, [salesOrder]);
   const handleSave = async () => {
     setSaving(true);
     setLoading(true);
@@ -279,9 +289,7 @@ function RibbonForm() {
     
 
     // If empty, set to "0"
-    if (value === "" || isNaN(value)) {
-      value = "0";
-    }
+    
     if (value > maxQty) {
       toast.error('Rep Usage Qty cannot exceed Delivered Qty', {
         position: 'top-center',

@@ -52,15 +52,15 @@ function LoginPage() {
         localStorage.setItem("jwt_token", jwt_token);
         if(roles === 'rep')
         {
-          navigate("/form");
+          navigate("/dashboard");
         }
         else if(roles === 'repclerk')
         {
-          navigate("/RepClerk");
+          navigate("/dashboard");
         }
         else
       {
-        navigate("/ReviewDN");
+        navigate("/dashboard");
       }
         
       } else {

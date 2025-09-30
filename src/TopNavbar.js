@@ -42,9 +42,9 @@ const toggleAdminMenu = () => {
         </button>
       </div>
       <div className={`nav-buttons ${isMenuOpen ? 'open' : ''}`}>
-        {/* <button onClick={() => handleNavigate('Dashboard', '/dashboard')}>
+        <button onClick={() => handleNavigate('Dashboard', '/dashboard')}>
           <FaHome className="icon" /> Dashboard
-        </button> */}
+        </button> 
 
         {role === 'rep' && (
           <button onClick={() => handleNavigate('Rep', '/form')}>

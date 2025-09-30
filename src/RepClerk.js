@@ -8,6 +8,7 @@ import Popup from './Popup';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useLoader } from './LoaderContext';
+import { useLocation } from 'react-router-dom';
 
 function RepClerk() {
   const [adminMenuOpen, setAdminMenuOpen] = useState(false);
@@ -24,15 +25,18 @@ function RepClerk() {
   const closeAdminMenu = () => setAdminMenuOpen(false);
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
+
   const token = localStorage.getItem('jwt_token');
-  useEffect(() => {
-    
-      if (!token) {
-       alert('Authentication Error', 'Token not found. Please log in again.');
-        return;
-      }
-  //  handleFetch();
-  }, []);
+  const location = useLocation();
+const queryParams = new URLSearchParams(location.search);
+const salesOrder = queryParams.get('salesOrder'); 
+
+useEffect(() => {
+  if (salesOrder) {
+    setDeliveryNote(salesOrder);
+    handleFetch(salesOrder); // fetch data for this sales order
+  }
+}, [salesOrder]);
   const handleSave = async () => {
     setSaving(true);
     setLoading(true);
@@ -365,7 +369,7 @@ else
                   <td>{item.mstockDes}</td>
                   <td style={{ textAlign: 'right' }}>{item.morderQty}</td>
                   <td style={{ textAlign: 'right' }}>{item.mshipQty}</td>
-                  <td style={{ textAlign: 'right' }}>{item.repUsageQty}</td>
+                  <td style={{ textAlign: 'right' }}>{item.repUsageQty??0}</td>
                   <td style={{ textAlign: 'right' }}>
                   <input
   type="number"

@@ -1,154 +1,173 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './RibbonForm.css';
-import { FaSave, FaFileExport } from 'react-icons/fa';
+import { FaEye } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import {
-  BarChart, Bar, LineChart, Line, XAxis, YAxis,
-  CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend
+  PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 import API_BASE_URL from "./config";
 
 function Dashboard() {
-  const [adminMenuOpen, setAdminMenuOpen] = useState(false);
-  const [deliveryNote, setDeliveryNote] = useState('');
-  const [tableData, setTableData] = useState([]);
-  const [filteredData, setFilteredData] = useState([]);
+  const [deliveryNotes, setDeliveryNotes] = useState([]);
+  const [chartData, setChartData] = useState([]); // For GetDashboard API data
   const [loading, setLoading] = useState(false);
-  const [columnFilters, setColumnFilters] = useState({});
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
-
-  const toggleAdminMenu = () => setAdminMenuOpen(!adminMenuOpen);
-  const closeAdminMenu = () => setAdminMenuOpen(false);
+  const [period, setPeriod] = useState("all"); // Default selection
   const navigate = useNavigate();
   const token = localStorage.getItem('jwt_token');
+
+  // Fetch Delivery Notes
   useEffect(() => {
-    handleFetch();
+    handleFetchDeliveryNotes();
   }, []);
 
-  const handleFetch = async () => {
+  const handleFetchDeliveryNotes = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/Rep/GetDeliveryNotes`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.status === 200) {
+        setDeliveryNotes(response.data);
+      }
+    } catch (err) {
+      console.error("Error fetching delivery notes", err);
+      setDeliveryNotes([]);
+    }
+  };
+
+  // Fetch Dashboard Data (for Pie Chart)
+  useEffect(() => {
+    handleFetchDashboard();
+  }, [period]);
+
+  const handleFetchDashboard = async () => {
     setLoading(true);
     try {
-      const response = await axios.post(`${API_BASE_URL}/Rep/Saleorderdetails`, {
-        SalesOrderNumber: ""}, // body
-        {
-          headers: {
-            Authorization: `Bearer ${token}`, // pass token in header
-            'Content-Type': 'application/json'
-          }        
-      });
+      const response = await axios.get(
+        `${API_BASE_URL}/Rep/GetDashBoard?period=${period}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-      if (response.status !== 200) {
-        alert("No data found!");
-        return;
+      if (response.status === 200) {
+        // Ensure data format: [{ name: "Rep Completed", value: 10 }, ...]
+        const formattedData = response.data.map(item => ({
+          name: item.name,
+          value: item.value
+        }));
+        setChartData(formattedData);
       }
-
-      setTableData(response.data);
     } catch (err) {
-      console.error(err);
-      setTableData([]);
+      console.error("Error fetching dashboard data", err);
+      setChartData([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleFetch();
-    }
-  };
-
-  const handleFilterChange = (key, value) => {
-    setColumnFilters(prev => ({ ...prev, [key]: value }));
-  };
-
-  const handleSort = (key) => {
-    let direction = 'asc';
-    if (sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
-    }
-    setSortConfig({ key, direction });
-  };
-
-  useEffect(() => {
-    let filtered = tableData.filter(item =>
-      Object.keys(columnFilters).every(key => {
-        const filterVal = columnFilters[key]?.toLowerCase() || '';
-        const itemVal = (item[key] ?? '').toString().toLowerCase();
-        return itemVal.includes(filterVal);
-      })
-    );
-
-    if (sortConfig.key) {
-      filtered.sort((a, b) => {
-        const aVal = (a[sortConfig.key] ?? '').toString();
-        const bVal = (b[sortConfig.key] ?? '').toString();
-        if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
-        if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
-        return 0;
-      });
-    }
-
-    setFilteredData(filtered);
-  }, [tableData, columnFilters, sortConfig]);
-
-  const renderSortArrow = (key) => {
-    if (sortConfig.key !== key) return '⬍';
-    return sortConfig.direction === 'asc' ? '↑' : '↓';
-  };
-
   const pieColors = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#8dd1e1'];
 
   return (
-    <div className="ribbon-page" onClick={closeAdminMenu}>
+    <div className="ribbon-page">
       {loading && <p>Loading data...</p>}
 
-      {filteredData.length > 0 && (
-        <div className="charts-container">
-          <h3>Dashboard Charts</h3>
-          <div className="chart-columns" style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-            {/* Bar Chart Column */}
-            <div style={{ flex: 1, minWidth: '300px' }}>
-              <h4>Order Quantity by Stock Code</h4>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={filteredData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="mstockCode" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="morderQty" fill="#8884d8" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* Pie Chart Column */}
-            <div style={{ flex: 1, minWidth: '300px' }}>
-              <h4>Shipment Quantity Distribution</h4>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={filteredData}
-                    dataKey="mshipQty"
-                    nameKey="mstockCode"
-                    outerRadius={100}
-                    fill="#82ca9d"
-                    label
-                  >
-                    {filteredData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
+      {/* Flex container */}
+      <div className="dashboard-row">
+        
+        {/* Left Side - Delivery Notes Table */}
+        <div className="delivery-notes-section">
+          <h3>📑 Delivery Notes</h3>
+          <div className="table-container">
+            <table className="delivery-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Sales Order</th>
+                  <th>Customer</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {deliveryNotes.length > 0 ? (
+                  deliveryNotes.map((note, index) => (
+                    <tr key={index}>
+                      <td>{index + 1}</td>
+                      <td>{note.salesOrder}</td>
+                      <td>{note.customer}</td>
+                      <td>
+                      <span className={`status-badge ${(note.status ?? "notstarted")
+  .toLowerCase()
+  .replace(/\s+/g, "-")   // replace spaces
+  .replace(/&/g, "-")     // replace &
+}`}>
+  {note.status ?? "not-started"}
+</span>
+                      </td>
+                      <td>
+                      <button
+  className="action-btn"
+  onClick={() => {
+    const role = localStorage.getItem("roles"); // get role
+    if (role === "repclerk") {
+      navigate(`/repclerk?salesOrder=${note.salesOrder}`);
+    } else if (role === "rep")  {
+      navigate(`/form?salesOrder=${note.salesOrder}`);
+    }
+    else{
+      navigate(`/ReviewDN?salesOrder=${note.salesOrder}`);
+    }
+  }}
+>
+  <FaEye /> View
+</button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="5" style={{ textAlign: 'center' }}>
+                      No Delivery Notes Found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
-      )}
 
+        {/* Right Side - Pie Chart */}
+        <div className="chart-section">
+          <div className="chart-header">
+            <h3>📊 Delivery Status</h3>
+            <select value={period} onChange={(e) => setPeriod(e.target.value)}>
+            <option value="all">All</option>
+              <option value="lastMonth">Last Month</option>
+              <option value="last7days">Last 7 Days</option>
+              <option value="currentMonth">Current Month</option>
+            </select>
+          </div>
+
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={chartData}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={100}
+                label
+              >
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
     </div>
   );
 }

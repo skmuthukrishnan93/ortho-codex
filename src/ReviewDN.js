@@ -1,48 +1,60 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './RibbonForm.css';
-import { FaSave, FaFileExport, FaUndo } from 'react-icons/fa';
+import { FaUndo, FaShare } from 'react-icons/fa'; // Added reroute icon
 import { useNavigate } from 'react-router-dom';
 import API_BASE_URL from "./config";
 import Popup from './Popup';
 import { useLoader } from './LoaderContext';
+import { useLocation } from 'react-router-dom';
+
 function ReviewDN() {
   const [adminMenuOpen, setAdminMenuOpen] = useState(false);
   const [deliveryNote, setDeliveryNote] = useState('');
   const [tableData, setTableData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
-  const { loading, setLoading } = useLoader(); // ✅ Correct - destructure object
+  const { loading, setLoading } = useLoader();
 
   const [columnFilters, setColumnFilters] = useState({});
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
-  const [showPopup, setShowPopup] = useState(false);
 
-  const toggleAdminMenu = () => setAdminMenuOpen(!adminMenuOpen);
-  const closeAdminMenu = () => setAdminMenuOpen(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [showReroutePopup, setShowReroutePopup] = useState(false); // 🔑 reroute popup
+  const [clerks, setClerks] = useState([]); // 🔑 store clerks list
+  const [selectedClerk, setSelectedClerk] = useState("");
+
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
   const token = localStorage.getItem('jwt_token');
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const salesOrder = queryParams.get('salesOrder'); 
+
   useEffect(() => {
-    
-      if (!token) {
-       alert('Authentication Error', 'Token not found. Please log in again.');
-        return;
-      }
-   // handleFetch();
+    if (!token) {
+      alert('Authentication Error: Token not found. Please log in again.');
+      return;
+    }
   }, []);
+  useEffect(() => {
+    if (salesOrder) {
+      setDeliveryNote(salesOrder);
+      handleFetch(salesOrder); // fetch data for this sales order
+    }
+  }, [salesOrder]);
   const handleSave = async () => {
     setSaving(true);
     setLoading(true);
     try {
       const response = await axios.post(`${API_BASE_URL}/Rep/updatestatus`, {
-        data: tableData}, // body
-        {
-          headers: {
-            Authorization: `Bearer ${token}`, // pass token in header
-            'Content-Type': 'application/json'
-          }        
+        data: tableData
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
-  
+
       if (response.status === 200) {
         alert('Data updated successfully!');
         handleFetch();
@@ -57,17 +69,17 @@ function ReviewDN() {
       setLoading(false);
     }
   };
-  
+
   const handleFetch = async (note = deliveryNote) => {
     setLoading(true);
     try {
       const response = await axios.post(`${API_BASE_URL}/Rep/revieworderdetails`, {
-        SalesOrderNumber: note}, // body
-        {
-          headers: {
-            Authorization: `Bearer ${token}`, // pass token in header
-            'Content-Type': 'application/json'
-          }        
+        SalesOrderNumber: note
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
 
       if (response.status !== 200) {
@@ -84,13 +96,48 @@ function ReviewDN() {
     }
   };
 
+  const handleRerouteClick = async () => {
+    try {
+      const res = await axios.get(`${API_BASE_URL}/Rep/getclerks`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setClerks(res.data || []);
+      setShowReroutePopup(true);
+    } catch (err) {
+      console.error("Failed to fetch clerks", err);
+      alert("Failed to load clerks");
+    }
+  };
+
+  const handleConfirmReroute = async () => {
+    if (!selectedClerk) {
+      alert("Please select a clerk to reroute!");
+      return;
+    }
+    try {
+      await axios.post(`${API_BASE_URL}/Rep/reroute`, {
+        deliveryNote,
+        clerkId: selectedClerk
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert("Rerouted successfully!");
+      setShowReroutePopup(false);
+    } catch (err) {
+      console.error("Reroute error:", err);
+      alert("Failed to reroute.");
+    }
+  };
+
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       handleFetch();
     }
   };
-
+  const isRerouteAllowed = filteredData.some(
+    (item) => item.status === "RepCompleted" || item.status === "StoreInProgress"
+  );
   const handleFilterChange = (key, value) => {
     setColumnFilters(prev => ({ ...prev, [key]: value }));
   };
@@ -129,21 +176,68 @@ function ReviewDN() {
     if (sortConfig.key !== key) return '⬍';
     return sortConfig.direction === 'asc' ? '↑' : '↓';
   };
+
   const isValidateAllowed = filteredData.some(
-    (item) => item.status === 'ReadyToPostSyspro' || 'Send Email To Customer Service' || item.status==='Completed&ReadyForValidation'
+    (item) =>
+      item.status === 'ReadyToPostSyspro' ||
+      item.status === 'Send Email To Customer Service' ||
+      item.status === 'Completed&ReadyForValidation'
   );
 
   return (
-    <div className="ribbon-page" onClick={closeAdminMenu}>
-        {isValidateAllowed && (<div className="ribbon-bar">
-        <div className="ribbon-buttons">
-        
-<button className="ribbon-button" onClick={handleSave}>
-  <FaUndo className="icon" /> Update Status To InProgress
-</button>
+    <div className="ribbon-page" onClick={() => setAdminMenuOpen(false)}>
+      {isValidateAllowed && (
+        <div className="ribbon-bar">
+          <div className="ribbon-buttons">
+            <button className="ribbon-button" onClick={handleSave}>
+              <FaUndo className="icon" /> Update Status To InProgress
+            </button>
+
+            {/* 🔑 New Reroute Button */}
+            {isRerouteAllowed && (
+        <button className="ribbon-button" onClick={handleRerouteClick}>
+          <FaShare className="icon" /> Reroute to Clerk
+        </button>
+      )}
+          </div>
         </div>
+      )}
+
+      {/* Existing delivery note popup */}
+      <Popup
+        show={showPopup}
+        onClose={() => setShowPopup(false)}
+        onSelect={(noteNo) => {
+          setDeliveryNote(noteNo);
+          setTimeout(() => {
+            handleFetch(noteNo);
+          }, 1000);
+        }}
+      />
+
+      {/* 🔑 Reroute Popup */}
+      {showReroutePopup && (
+        <div className="popup-overlay">
+          <div className="popup-content">
+            <h3>Reroute to Another Clerk</h3>
+            <select
+              value={selectedClerk}
+              onChange={(e) => setSelectedClerk(e.target.value)}
+            >
+              <option value="">-- Select Clerk --</option>
+              {clerks.map((clerk) => (
+                <option key={clerk.id} value={clerk.id}>
+                  {clerk.name}
+                </option>
+              ))}
+            </select>
+            <div className="popup-actions">
+              <button onClick={handleConfirmReroute}>Confirm</button>
+              <button onClick={() => setShowReroutePopup(false)}>Cancel</button>
+            </div>
+          </div>
         </div>
-)}
+      )}
       <div className="delivery-note-container">
         <label htmlFor="deliveryNote">Delivery Note</label>
         <div className="input-button-wrapper">
